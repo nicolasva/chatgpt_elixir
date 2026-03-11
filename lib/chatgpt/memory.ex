@@ -4,12 +4,12 @@ defmodule Chatgpt.Memory do
   Équivalent du modèle Memory Ruby (CouchRest).
   """
 
-  @couch_url Application.compile_env(:chatgpt, :couchdb_url, "http://admin:admin@127.0.0.1:5984")
   @db_name "chatgpt_memory"
   @design_name "memory"
   @view_name "by_session"
 
-  defp db_url, do: "#{@couch_url}/#{@db_name}"
+  defp couch_url, do: Application.get_env(:chatgpt, :couchdb_url, "http://admin:admin@127.0.0.1:5984")
+  defp db_url, do: "#{couch_url()}/#{@db_name}"
 
   @doc "Assure que la vue CouchDB existe."
   def ensure_views! do

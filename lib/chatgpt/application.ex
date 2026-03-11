@@ -14,10 +14,10 @@ defmodule Chatgpt.Application do
       {DNSCluster, query: Application.get_env(:chatgpt, :dns_cluster_query) || :ignore},
       {Phoenix.PubSub, name: Chatgpt.PubSub},
       {Redix, {redis_url, [name: :redix]}},
-      # GenServers du chatbot (ordre important : AutoLearner charge le dataset en premier)
-      Chatgpt.AutoLearner,
-      Chatgpt.IntentDetector,
-      Chatgpt.CompoundPhraseResolver,
+      # Chatbot (ordre important : AutoLearner charge le dataset en premier)
+      Chatgpt.AutoLearner,       # GenServer — état complexe + apprentissage async
+      Chatgpt.IntentDetector,    # GenServer — init async via handle_continue (enrichissement Wiktionnaire)
+      Chatgpt.CompoundPhraseResolver, # Agent — cache simple phrase→remplacement
       # Start to serve requests, typically the last entry
       ChatgptWeb.Endpoint
     ]

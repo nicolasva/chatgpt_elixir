@@ -11,7 +11,7 @@ defmodule ChatgptWeb.ChatController do
     session_id = get_session(conn, :session_id) || generate_session_id()
     conn = put_session(conn, :session_id, session_id)
 
-    reply = Chatgpt.ChatService.predict(message, session_id)
+    reply = Chatgpt.Chat.predict(message, session_id)
 
     conn
     |> put_resp_content_type("application/json")

@@ -1,0 +1,53 @@
+services:
+  # ── Application Phoenix ────────────────────────────────────────────────────
+  - type: web
+    name: chatbot-web
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    region: frankfurt
+    plan: free
+    healthCheckPath: /
+    envVars:
+      - key: PHX_SERVER
+        value: "true"
+      - key: PORT
+        value: "4000"
+      - key: SECRET_KEY_BASE
+        generateValue: true
+      # Renseigner après déploiement : <nom-service>.onrender.com
+      - key: PHX_HOST
+        sync: false
+      # Construit manuellement depuis le service chatbot-couchdb ci-dessous :
+      # http://admin:<COUCHDB_PASSWORD>@chatbot-couchdb:5984
+      - key: COUCHDB_URL
+        sync: false
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: chatbot-redis
+          property: connectionString
+
+  # ── Redis (managé Render) ──────────────────────────────────────────────────
+  - type: redis
+    name: chatbot-redis
+    region: frankfurt
+    plan: free
+    maxmemoryPolicy: allkeys-lru
+    ipAllowList: []
+
+  # ── CouchDB (service privé Docker) ────────────────────────────────────────
+  - type: pserv
+    name: chatbot-couchdb
+    runtime: docker
+    dockerImage: couchdb:3.4
+    region: frankfurt
+    plan: starter          # disque persistant requis (7$/mois)
+    envVars:
+      - key: COUCHDB_USER
+        value: admin
+      - key: COUCHDB_PASSWORD
+        generateValue: true
+    disk:
+      name: couchdb-data
+      mountPath: /opt/couchdb/data
+      sizeGB: 1

@@ -7,8 +7,12 @@ defmodule Chatgpt.WebSearchOrchestrator do
 
   require Logger
 
-  @doc "Recherche avec stratégies de repli en cascade."
+  @doc "Recherche avec stratégies de repli en cascade (avec cache Redis 1h)."
   def search(query) do
+    Chatgpt.CachedSearch.search("web_search", query, fn -> do_search(query) end)
+  end
+
+  defp do_search(query) do
     enriched_query = Chatgpt.CompoundPhraseResolver.resolve(query)
 
     if enriched_query != String.downcase(query) do

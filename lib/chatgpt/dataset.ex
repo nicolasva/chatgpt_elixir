@@ -4,11 +4,11 @@ defmodule Chatgpt.Dataset do
   Équivalent du modèle Dataset Ruby (CouchRest).
   """
 
-  @couch_url Application.compile_env(:chatgpt, :couchdb_url, "http://admin:admin@127.0.0.1:5984")
   @db_name "chatgpt_dataset"
   @dataset_path :code.priv_dir(:chatgpt) |> to_string() |> Path.join("dataset.json")
 
-  defp db_url, do: "#{@couch_url}/#{@db_name}"
+  defp couch_url, do: Application.get_env(:chatgpt, :couchdb_url, "http://admin:admin@127.0.0.1:5984")
+  defp db_url, do: "#{couch_url()}/#{@db_name}"
 
   @doc "Retourne tous les documents du dataset."
   def all do

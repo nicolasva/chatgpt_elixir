@@ -4,16 +4,6 @@ config :chatgpt,
   couchdb_url: System.get_env("COUCHDB_URL", "http://admin:admin@127.0.0.1:5984"),
   redis_url: System.get_env("REDIS_URL", "redis://localhost:6379/0")
 
-# Configure your database
-config :chatgpt, Chatgpt.Repo,
-  username: "postgres",
-  password: "postgres",
-  hostname: "localhost",
-  database: "chatgpt_dev",
-  stacktrace: true,
-  show_sensitive_data_on_connection_error: true,
-  pool_size: 10
-
 # For development, we disable any cache and enable
 # debugging and code reloading.
 #
@@ -92,5 +82,3 @@ config :phoenix_live_view,
   # Enable helpful, but potentially expensive runtime checks
   enable_expensive_runtime_checks: true
 
-# Disable swoosh api client as it is only required for production adapters.
-config :swoosh, :api_client, false

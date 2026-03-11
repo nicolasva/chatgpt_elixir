@@ -11,9 +11,13 @@ defmodule Chatgpt.WeatherService do
 
   def weather_words, do: @weather_words
 
-  @doc "Recherche la météo à partir du message."
+  @doc "Recherche la météo à partir du message (avec cache Redis 30 min)."
   def search(message) do
     city = extract_city(message) || "Paris"
+    Chatgpt.CachedSearch.search("weather", city, fn -> fetch_weather(city) end, ttl: 1_800)
+  end
+
+  defp fetch_weather(city) do
     encoded_city = URI.encode(city, &URI.char_unreserved?/1)
     url = "https://wttr.in/#{encoded_city}?format=j1&lang=fr"
 

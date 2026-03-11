@@ -1,0 +1,32 @@
+.git
+.gitignore
+.env
+.envrc
+
+# Dépendances et build local
+deps/
+_build/
+priv/static/assets/
+node_modules/
+
+# Logs et temporaires
+*.log
+tmp/
+
+# Fichiers de test
+test/
+
+# Documentation
+doc/
+*.md
+
+# Docker et CI
+Dockerfile*
+docker-compose*
+.dockerignore
+.github/
+
+# Elixir/Mix
+.elixir_ls/
+.formatter.exs
+*.beam

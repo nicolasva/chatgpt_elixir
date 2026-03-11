@@ -1,0 +1,103 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: phoenix
+  namespace: chatbot
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: phoenix
+  template:
+    metadata:
+      labels:
+        app: phoenix
+    spec:
+      initContainers:
+        - name: wait-for-couchdb
+          image: curlimages/curl:latest
+          command:
+            - sh
+            - -c
+            - |
+              echo "Attente de CouchDB..."
+              i=0
+              until curl -sf "http://couchdb:5984/_up" > /dev/null 2>&1; do
+                i=$((i+1))
+                if [ $i -ge 30 ]; then echo "CouchDB non disponible."; exit 1; fi
+                sleep 2
+              done
+              curl -sf -X PUT "http://$COUCHDB_USER:$COUCHDB_PASSWORD@couchdb:5984/_cluster_setup" \
+                -H "Content-Type: application/json" \
+                -d '{"action":"enable_single_node","bind_address":"0.0.0.0","username":"'"$COUCHDB_USER"'","password":"'"$COUCHDB_PASSWORD"'"}' || true
+              curl -sf -X PUT "http://$COUCHDB_USER:$COUCHDB_PASSWORD@couchdb:5984/_users" || true
+              curl -sf -X PUT "http://$COUCHDB_USER:$COUCHDB_PASSWORD@couchdb:5984/_replicator" || true
+              echo "CouchDB prêt."
+          env:
+            - name: COUCHDB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: chatbot-secrets
+                  key: COUCHDB_USER
+            - name: COUCHDB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: chatbot-secrets
+                  key: COUCHDB_PASSWORD
+      containers:
+        - name: phoenix
+          image: chatbot:latest
+          ports:
+            - containerPort: 4000
+          envFrom:
+            - configMapRef:
+                name: chatbot-config
+          env:
+            - name: SECRET_KEY_BASE
+              valueFrom:
+                secretKeyRef:
+                  name: chatbot-secrets
+                  key: SECRET_KEY_BASE
+            - name: TAVILY_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: chatbot-secrets
+                  key: TAVILY_API_KEY
+            - name: COUCHDB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: chatbot-secrets
+                  key: COUCHDB_USER
+            - name: COUCHDB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: chatbot-secrets
+                  key: COUCHDB_PASSWORD
+            - name: COUCHDB_URL
+              value: "http://$(COUCHDB_USER):$(COUCHDB_PASSWORD)@couchdb:5984"
+          startupProbe:
+            httpGet:
+              path: /
+              port: 4000
+            initialDelaySeconds: 10
+            failureThreshold: 30
+            periodSeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 4000
+            initialDelaySeconds: 15
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 4000
+            initialDelaySeconds: 30
+            periodSeconds: 20
+          resources:
+            requests:
+              cpu: 200m
+              memory: 384Mi
+            limits:
+              cpu: "1"
+              memory: 768Mi

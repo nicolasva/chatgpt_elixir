@@ -1,0 +1,56 @@
+services:
+  couchdb:
+    image: couchdb:3.4
+    environment:
+      COUCHDB_USER: admin
+      COUCHDB_PASSWORD: admin
+    volumes:
+      - couchdb_data:/opt/couchdb/data
+    networks:
+      - chatbot
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5984/_up"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  redis:
+    image: redis:7-alpine
+    volumes:
+      - redis_data:/data
+    networks:
+      - chatbot
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  web:
+    build: .
+    ports:
+      - "4000:4000"
+    environment:
+      PHX_SERVER: "true"
+      PHX_HOST: localhost
+      PORT: "4000"
+      SECRET_KEY_BASE: "dev_secret_key_base_at_least_64_chars_long_replace_in_prod_12345"
+      COUCHDB_URL: "http://admin:admin@couchdb:5984"
+      REDIS_URL: "redis://redis:6379/0"
+    depends_on:
+      couchdb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - chatbot
+    restart: unless-stopped
+
+networks:
+  chatbot:
+    driver: bridge
+
+volumes:
+  couchdb_data:
+  redis_data:

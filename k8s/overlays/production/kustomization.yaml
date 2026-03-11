@@ -1,0 +1,30 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: chatbot
+
+resources:
+  - ../../base
+
+images:
+  - name: chatbot
+    newName: ghcr.io/your-org/chatbot
+    newTag: latest
+
+patches:
+  - path: phoenix-deployment-patch.yaml
+    target:
+      kind: Deployment
+      name: phoenix
+  - path: couchdb-statefulset-patch.yaml
+    target:
+      kind: StatefulSet
+      name: couchdb
+  - path: ingress-patch.yaml
+    target:
+      kind: Ingress
+      name: chatbot-ingress
+  - path: phoenix-hpa-patch.yaml
+    target:
+      kind: HorizontalPodAutoscaler
+      name: phoenix-hpa

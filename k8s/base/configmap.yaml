@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: chatbot-config
+  namespace: chatbot
+data:
+  MIX_ENV: "prod"
+  PHX_SERVER: "true"
+  PORT: "4000"
+  PHX_LOG_LEVEL: "info"
+  COUCHDB_HOST: "couchdb"
+  COUCHDB_PORT: "5984"
+  COUCHDB_MAX_RETRIES: "30"
+  COUCHDB_RETRY_INTERVAL: "2"
+  REDIS_URL: "redis://redis:6379/0"

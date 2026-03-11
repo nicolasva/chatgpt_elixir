@@ -35,11 +35,12 @@ services:
     maxmemoryPolicy: allkeys-lru
     ipAllowList: []
 
-  # ── CouchDB (service privé Docker) ────────────────────────────────────────
+  # ── CouchDB (service privé — image Docker Hub) ────────────────────────────
   - type: pserv
     name: chatbot-couchdb
-    runtime: docker
-    dockerImage: couchdb:3.4
+    runtime: image
+    image:
+      url: docker.io/library/couchdb:3.4
     region: frankfurt
     plan: starter          # disque persistant requis (7$/mois)
     envVars:
